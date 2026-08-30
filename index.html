@@ -1588,7 +1588,7 @@ body.ksboot .main { animation: ksMainIn .6s var(--ks-out) both; }
           </div>
           <output id="o-fee">₹11,000</output>
         </div>
-        <div class="note" style="border-top:1px dashed var(--line); padding-top:11px;">Assumptions: 3.5 min per manual follow-up · staff cost ₹110/hr · 1.5% of filings otherwise slip (avg penalty ₹3,000) · 3% of fees otherwise delayed beyond 60 days · KarSathi at ₹5,000/month.</div>
+        <div class="note" style="border-top:1px dashed var(--line); padding-top:11px;">Assumptions: 3.5 min per manual follow-up · staff cost ₹110/hr · 1.5% of filings otherwise slip (avg penalty ₹3,000) · 3% of fees otherwise delayed beyond 60 days · KarSathi at ₹6,000/month + ₹35,000 one-time setup.</div>
       </div>
       <div>
         <div class="grid g2">
@@ -1611,11 +1611,9 @@ body.ksboot .main { animation: ksMainIn .6s var(--ks-out) both; }
     </div>
     <div class="card" style="margin-top:15px; border-color:rgba(16,185,129,.3);">
       <h3><svg class="ksic" aria-hidden="true"><use href="#i-rupee"/></svg> Simple pricing — no per-client charges</h3>
-      <p class="sub">One flat plan per firm size · setup + article training included · cancel anytime</p>
-      <div class="ksprice">
-        <div class="pt"><span class="pt-name">Starter</span><b class="pt-amt">₹2,999<span>/mo</span></b><small>up to 200 clients · all 9 automations</small><small class="pt-yr">₹29,999/yr — 2 months free</small></div>
-        <div class="pt pt-hot"><span class="pill p-green">MOST CHOSEN</span><span class="pt-name">Practice</span><b class="pt-amt">₹5,000<span>/mo</span></b><small>up to 500 clients · the exact plan used in the calculator above</small><small class="pt-yr">₹49,999/yr — 2 months free</small></div>
-        <div class="pt"><span class="pt-name">Firm</span><b class="pt-amt">₹9,999<span>/mo</span></b><small>unlimited clients · priority support · custom reports</small><small class="pt-yr">₹99,999/yr — 2 months free</small></div>
+      <p class="sub">One plan · every firm size · setup + article training included · cancel anytime</p>
+      <div class="ksprice" style="grid-template-columns:1fr; max-width:480px; margin:14px auto 0;">
+        <div class="pt pt-hot"><span class="pill p-green">ALL-INCLUSIVE</span><span class="pt-name">KarSathi</span><b class="pt-amt">₹6,000<span>/mo</span></b><small>one-time setup ₹35,000 · unlimited clients · all 9 automations · priority support · custom reports</small><small class="pt-yr">₹59,999/yr prepaid — 2 months free</small></div>
       </div>
       <p class="sub" id="r-cover" style="margin-top:12px; font-weight:600; color:#0F172A;">—</p>
       <div class="note">WhatsApp messages billed at actuals (~₹0.135 incl. GST — already counted in the math above) · your data stays in the firm’s own Google account · no lock-in, export anytime.</div>
@@ -2786,7 +2784,7 @@ var TOUR = [
   /* CHAPTER 7 · THE MONEY & THE CLOSE */
   {c:'CHAPTER 7 · THE MONEY & THE CLOSE', v:'roi', sel:'#v-roi .card',
    t:'The money slide — your numbers, live',
-   s:'“Now the only slide that matters. These sliders are your practice: number of clients, staff on follow-ups, touches per month, average fee. For a firm this size, the system performs over 3,000 follow-ups a month — that is 23 staff-days of work, every month — and removes the 1.5% slippage that quietly costs ₹1.4 lakh a year in penalties, plus pulls 3% of fees back from the 60-day bucket. Net ₹5 lakh a year, against a ₹61,000 year-one cost. It costs less than one article’s salary. Drag anything — the math updates live.”'},
+   s:'“Now the only slide that matters. These sliders are your practice: number of clients, staff on follow-ups, touches per month, average fee. For a firm this size, the system performs over 3,000 follow-ups a month — that is 23 staff-days of work, every month — and removes the 1.5% slippage that quietly costs ₹1.4 lakh a year in penalties, plus pulls 3% of fees back from the 60-day bucket. Net ₹5 lakh a year, against a ₹1.07 lakh year-one cost. It costs less than one article’s salary. Drag anything — the math updates live.”'},
   {c:'CHAPTER 7 · THE MONEY & THE CLOSE', v:'dash', sel:'.hero',
    t:'The close — then stop talking',
    s:'“So — your follow-ups run at 9, 9:30, 10 and 10:30 every morning. Your clients get answers in three seconds on WhatsApp. Your fees get chased with the right tone, your leads never sleep, and every action sits on a tamper-proof record. Setup takes one day. Your data never leaves your Google account. Shall we start with your 20 most important clients this month?” — then stop, smile, and let the silence work.'}
@@ -2871,7 +2869,7 @@ function calroi(){
   var penalty   = cl * 6 * 0.015 * 3000;      /* 6 filings/yr, 1.5% slip @ ₹3,000 */
   var feesRec   = cl * fee * 0.03;            /* 3% of fees pulled back from 60+ days */
   var waCost    = actions * 12 * 0.135;       /* WhatsApp @ ₹0.135 incl. GST */
-  var spend     = 60000 + waCost;             /* KarSathi ₹5,000/mo + WhatsApp */
+  var spend     = 72000 + waCost;             /* KarSathi ₹6,000/mo + WhatsApp */
   var net       = staffSave + penalty + feesRec - spend;
   var mult      = net / spend;
   document.getElementById('r-actions').textContent   = actions.toLocaleString('en-IN');
@@ -2883,13 +2881,13 @@ function calroi(){
   document.getElementById('r-wa').textContent        = inr(waCost);
   document.getElementById('r-net').textContent       = lakh(Math.max(net,0));
   document.getElementById('r-roi').textContent       = (Math.max(mult,0)).toFixed(1)+'×';
-  document.getElementById('r-verdict').innerHTML     = 'KarSathi does <b>'+actions.toLocaleString('en-IN')+' follow-ups a month</b> for you — <b>'+Math.round(hours/8)+' staff-days of work, every month</b>, finished before the team finishes their morning chai. One prevented penalty pays for two months of the system.';
+  document.getElementById('r-verdict').innerHTML     = 'KarSathi does <b>'+actions.toLocaleString('en-IN')+' follow-ups a month</b> for you — <b>'+Math.round(hours/8)+' staff-days of work, every month</b>, finished before the team finishes their morning chai. Prevented penalties alone more than pay for the system, every month.';
   var fc = document.getElementById('r-cover');
   if(fc){
     var dn = Math.max(net, 0);
     if(dn > 0){
-      var pd = Math.max(1, Math.ceil(5000 / (dn / 30)));
-      fc.innerHTML = 'Your sliders say <b style="color:var(--emerald2);">' + lakh(dn) + ' / month net gain</b> — the ₹5,000 Practice plan pays for itself in <b>' + pd + ' day' + (pd > 1 ? 's' : '') + '</b> of that gain.';
+      var pd = Math.max(1, Math.ceil(6000 / (dn / 30)));
+      fc.innerHTML = 'Your sliders say <b style="color:var(--emerald2);">' + lakh(dn) + ' / month net gain</b> — the ₹6,000 plan pays for itself in <b>' + pd + ' day' + (pd > 1 ? 's' : '') + '</b> of that gain.';
     } else {
       fc.textContent = 'Drag the sliders above — the plan pays for itself in days of the net gain.';
     }
