@@ -134,17 +134,14 @@ After launch: support chats, marketing content, small features.
 - Message templates need Meta approval (1–3 days each) — **I draft every template for you**
 - I handle all technical connection — you only create the account (I'll give exact steps, ~15 min)
 
-## 10. KarSathi's own pricing (suggestion — you decide)
+## 10. KarSathi pricing (LOCKED — from BUSINESS_PLAN.md, 30 Aug 2026)
 
-Market check done: Turia ₹100–200/user/mo (5-user min), ERPCA from ~₹5,000/mo, TaxDome $58/user — **none combine India compliance + WhatsApp properly.**
-
-| Plan | Price | Includes |
-|---|---|---|
-| **Starter** | ₹1,499/mo | 3 users, 400 clients, all core features, WhatsApp at actual cost |
-| **Growth** | ₹2,999/mo | 10 users, unlimited clients, AI assistant, priority support |
-| Annual | 2 months free | 14-day free trial, no card needed |
-
-Positioning: *cheaper than ERPCA, more India-specific than TaxDome, same WhatsApp power as Turia — plus a real compliance engine.*
+**One all-inclusive plan** (replaces all earlier tier ideas):
+- **Setup: ₹35,000 + GST** (list price) — WhatsApp API setup, Sheets+Drive wiring, dashboard, 9 automations, team training
+- **AMC: ₹6,000/mo + GST** — or ₹59,999/yr prepaid (2 months free)
+- **Founding deal: first 3 firms — ₹8–10k setup + 3 months AMC free**
+- Running costs paid to the client's OWN accounts: WhatsApp utility ₹0.115+GST/msg (replies in 24h free), VPS ₹400–600/mo, Sheets/Telegram/AI ₹0
+- Positioning vs DIY SaaS (QwikCA/Finexo/Turia): done-for-you + real conversational AI + data in the firm's own accounts
 
 ## 11. Legal & compliance (before launch)
 
