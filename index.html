@@ -320,6 +320,19 @@
   .ucard small { font-size:10px; color:var(--muted); }
   .ucard .tick { margin-left:auto; color:var(--emerald2); font-size:14px; opacity:0; }
   .ucard.sel .tick { opacity:1; }
+  /* — team login (v3.9.0) — */
+  .uc-sec { font-size:9.5px; font-weight:800; letter-spacing:.14em; color:#94A3B8; margin:13px 0 6px; }
+  #usercards .uc-sec:first-child { margin-top:0; }
+  .ucard small.uc-mail { display:block; font-size:9.5px; color:#94A3B8; margin-top:1px; }
+  .lgmail { margin-top:13px; }
+  .qdemo { margin-top:15px; border:1px dashed #CBD5E1; border-radius:13px; padding:12px 13px; background:#F8FAFC; }
+  .qdemo-t { font-size:9.5px; font-weight:800; letter-spacing:.12em; color:#475569; margin-bottom:9px; }
+  .qdemo-btns { display:flex; gap:8px; }
+  .qbtn { flex:1; padding:9px 10px; border-radius:10px; border:1px solid transparent; font-size:11.5px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; transition:transform .15s ease, box-shadow .15s ease; }
+  .qbtn:hover { transform:translateY(-1px); }
+  .qbtn-art { background:linear-gradient(135deg,#EEF2FF,#E0E7FF); color:#3730A3; border-color:#C7D2FE; }
+  .qbtn-par { background:linear-gradient(135deg,#FFF8E7,#FDEBC8); color:#92400E; border-color:#F2D9A4; }
+  .qdemo-s { font-size:9.5px; color:var(--muted); margin-top:8px; line-height:1.55; }
   .pwdrow { display:flex; gap:8px; margin-top:14px; }
   .pwdrow input { flex:1; background:var(--panel2); border:1px solid var(--line); border-radius:11px; padding:12px 14px; color:var(--text); font-size:13px; outline:none; font-family:inherit; }
   .pwdrow input:focus { border-color:rgba(14,165,201,.5); }
@@ -1139,11 +1152,22 @@ body.ksboot .main { animation: ksMainIn .6s var(--ks-out) both; }
       <div id="lgf2" style="display:none">
         <div class="firmchip">🏢 <b id="firmname">Sharma &amp; Associates</b><span id="firmidchip">KRS-2201</span></div>
         <h3>Who's working today?</h3>
-        <div class="sub2">Select your name, then enter your password</div>
+        <div class="sub2">Pick your name — your email fills in automatically</div>
         <div id="usercards"></div>
+        <div class="fld lgmail"><label>Email</label>
+          <div class="inwrap"><span class="inic">✉️</span><input class="pzin" id="lemail" type="email" placeholder="name@sharmaassociates.in" oninput="mailPick()"></div>
+        </div>
         <div class="pwdrow">
-          <input id="pwd" type="password" placeholder="Your password" onkeydown="if(event.key==='Enter')dologin()">
+          <input id="pwd" type="password" placeholder="Your password (demo — any works)" onkeydown="if(event.key==='Enter')dologin()">
           <button class="signin" onclick="dologin()">Sign in →</button>
+        </div>
+        <div class="qdemo">
+          <div class="qdemo-t">⚡ ONE-CLICK DEMO ACCESS</div>
+          <div class="qdemo-btns">
+            <button class="qbtn qbtn-art" onclick="quickLogin('Article')">🎓 <b>Article</b> · one-click login</button>
+            <button class="qbtn qbtn-par" onclick="quickLogin('Partner')">👤 <b>Partner</b> · one-click login</button>
+          </div>
+          <div class="qdemo-s">Fills email + password and signs you in instantly · Article sees the team work view · Partner sees everything incl. Telegram alerts</div>
         </div>
         <div class="lrow"><a class="llink" onclick="firmBack()">← Use a different firm</a></div>
         <div class="addmem">New member joining the firm? <a class="llink" onclick="openLoginAdd()">+ Add member</a></div>
@@ -3196,15 +3220,47 @@ function forgotPw(){
   toast('🔐 Reset link sent to the firm\u2019s registered email · Partners can reset any member\u2019s password from Settings \u2192 Team & Access');
 }
 var CURRENT_USER = null, SEL_USER = 0;
+function uemail(u){
+  var t = u.n.replace(/^CA\s+/,'').replace(/\./g,'').trim().split(/\s+/);
+  var f = (t[0]||'x').toLowerCase(), l = (t.length>1 ? t[t.length-1] : '').toLowerCase();
+  return (l && l!==f ? f+'.'+l : f) + '@sharmaassociates.in';
+}
 function renderUserCards(){
-  document.getElementById('usercards').innerHTML = USERS.map(function(u, ix){
-    return '<div class="ucard'+(ix===SEL_USER?' sel':'')+'" onclick="seluser('+ix+')">' +
-      '<div class="uav" style="background:'+u.c+'">'+u.i+'</div>' +
-      '<div><b>'+u.n+'</b><small>'+u.p+' · <span style="color:'+(u.r==='Partner'?'var(--gold-soft)':'var(--sky)')+'; font-weight:700;">'+u.r.toUpperCase()+'</span></small></div>' +
-      '<span class="tick">✓</span></div>';
-  }).join('');
+  var h = '<div class="uc-sec">PARTNERS</div>';
+  USERS.forEach(function(u, ix){ if(u.r==='Partner') h += ucard(u, ix); });
+  h += '<div class="uc-sec">ARTICLES · TEAM</div>';
+  USERS.forEach(function(u, ix){ if(u.r!=='Partner') h += ucard(u, ix); });
+  document.getElementById('usercards').innerHTML = h;
+  var em = document.getElementById('lemail');
+  if(em && USERS[SEL_USER]) em.value = uemail(USERS[SEL_USER]);
+}
+function ucard(u, ix){
+  return '<div class="ucard'+(ix===SEL_USER?' sel':'')+'" onclick="seluser('+ix+')">' +
+    '<div class="uav" style="background:'+u.c+'">'+u.i+'</div>' +
+    '<div><b>'+u.n+'</b><small>'+u.p+' · <span style="color:'+(u.r==='Partner'?'var(--gold-soft)':'var(--sky)')+'; font-weight:700;">'+u.r.toUpperCase()+'</span></small><small class="uc-mail">'+uemail(u)+'</small></div>' +
+    '<span class="tick">✓</span></div>';
 }
 function seluser(ix){ SEL_USER = ix; renderUserCards(); }
+function mailPick(){
+  var v = (document.getElementById('lemail').value||'').trim().toLowerCase();
+  if(!v) return;
+  for(var k=0;k<USERS.length;k++){
+    if(uemail(USERS[k]).toLowerCase() === v){ SEL_USER = k; renderUserCards(); break; }
+  }
+}
+function quickLogin(role){
+  for(var k=0;k<USERS.length;k++){
+    if(USERS[k].r === role){
+      SEL_USER = k; renderUserCards();
+      var em = document.getElementById('lemail');
+      if(em) em.value = uemail(USERS[k]);
+      document.getElementById('pwd').value = 'demo123';
+      dologin();
+      return;
+    }
+  }
+  toast('No ' + role + ' member found');
+}
 function dologin(){
   var pwd = document.getElementById('pwd');
   if(!pwd.value){ toast('Enter any password to continue (demo)'); pwd.focus(); return; }
