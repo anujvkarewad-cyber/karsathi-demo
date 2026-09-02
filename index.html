@@ -333,6 +333,11 @@
   .qbtn-art { background:linear-gradient(135deg,#EEF2FF,#E0E7FF); color:#3730A3; border-color:#C7D2FE; }
   .qbtn-par { background:linear-gradient(135deg,#FFF8E7,#FDEBC8); color:#92400E; border-color:#F2D9A4; }
   .qdemo-s { font-size:9.5px; color:var(--muted); margin-top:8px; line-height:1.55; }
+  /* — compact team login (v3.9.1) — */
+  .login-r { max-height:92vh; overflow-y:auto; }
+  .login-box { max-height:94vh; }
+  .usel { width:100%; padding:11px 12px; font-size:12.5px; cursor:pointer; }
+  .usel option, .usel optgroup { font-size:12.5px; color:#0F172A; }
   .pwdrow { display:flex; gap:8px; margin-top:14px; }
   .pwdrow input { flex:1; background:var(--panel2); border:1px solid var(--line); border-radius:11px; padding:12px 14px; color:var(--text); font-size:13px; outline:none; font-family:inherit; }
   .pwdrow input:focus { border-color:rgba(14,165,201,.5); }
@@ -1152,8 +1157,8 @@ body.ksboot .main { animation: ksMainIn .6s var(--ks-out) both; }
       <div id="lgf2" style="display:none">
         <div class="firmchip">🏢 <b id="firmname">Sharma &amp; Associates</b><span id="firmidchip">KRS-2201</span></div>
         <h3>Who's working today?</h3>
-        <div class="sub2">Pick your name — your email fills in automatically</div>
-        <div id="usercards"></div>
+        <div class="sub2">Select your name — your email fills in automatically</div>
+        <select class="pzin usel" id="usel" onchange="seluser(this.value)"><option value="0">Loading team…</option></select>
         <div class="fld lgmail"><label>Email</label>
           <div class="inwrap"><span class="inic">✉️</span><input class="pzin" id="lemail" type="email" placeholder="name@sharmaassociates.in" oninput="mailPick()"></div>
         </div>
@@ -3226,21 +3231,22 @@ function uemail(u){
   return (l && l!==f ? f+'.'+l : f) + '@sharmaassociates.in';
 }
 function renderUserCards(){
-  var h = '<div class="uc-sec">PARTNERS</div>';
-  USERS.forEach(function(u, ix){ if(u.r==='Partner') h += ucard(u, ix); });
-  h += '<div class="uc-sec">ARTICLES · TEAM</div>';
-  USERS.forEach(function(u, ix){ if(u.r!=='Partner') h += ucard(u, ix); });
-  document.getElementById('usercards').innerHTML = h;
+  var sel = document.getElementById('usel');
+  if(!sel) return;
+  var h = '<optgroup label="PARTNERS">';
+  USERS.forEach(function(u, ix){ if(u.r==='Partner') h += uopt(u, ix); });
+  h += '</optgroup><optgroup label="ARTICLES · TEAM">';
+  USERS.forEach(function(u, ix){ if(u.r!=='Partner') h += uopt(u, ix); });
+  h += '</optgroup>';
+  sel.innerHTML = h;
+  sel.value = String(SEL_USER);
   var em = document.getElementById('lemail');
   if(em && USERS[SEL_USER]) em.value = uemail(USERS[SEL_USER]);
 }
-function ucard(u, ix){
-  return '<div class="ucard'+(ix===SEL_USER?' sel':'')+'" onclick="seluser('+ix+')">' +
-    '<div class="uav" style="background:'+u.c+'">'+u.i+'</div>' +
-    '<div><b>'+u.n+'</b><small>'+u.p+' · <span style="color:'+(u.r==='Partner'?'var(--gold-soft)':'var(--sky)')+'; font-weight:700;">'+u.r.toUpperCase()+'</span></small><small class="uc-mail">'+uemail(u)+'</small></div>' +
-    '<span class="tick">✓</span></div>';
+function uopt(u, ix){
+  return '<option value="'+ix+'">'+u.n+' · '+u.p+'</option>';
 }
-function seluser(ix){ SEL_USER = ix; renderUserCards(); }
+function seluser(ix){ SEL_USER = parseInt(ix, 10) || 0; renderUserCards(); }
 function mailPick(){
   var v = (document.getElementById('lemail').value||'').trim().toLowerCase();
   if(!v) return;
