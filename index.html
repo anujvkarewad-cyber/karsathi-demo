@@ -1188,7 +1188,7 @@ body.ksboot .main { animation: ksMainIn .6s var(--ks-out) both; }
         </div>
       </div>
       <div class="demohint">🔒 Demo — any password works · Roles change what each person can see</div>
-      <div class="lcopy">© 2026 KarSathi. All rights reserved. · <b style="color:#0EA5C9;">v3.10.1</b></div>
+      <div class="lcopy">© 2026 KarSathi. All rights reserved. · <b style="color:#0EA5C9;">v3.10.2</b></div>
     </div>
   </div>
 </div>
@@ -1212,8 +1212,8 @@ body.ksboot .main { animation: ksMainIn .6s var(--ks-out) both; }
     <div class="ni" onclick="go('agent',this)"><span class="ic">🤖</span> AI Assistant</div>
     <div class="ni" onclick="go('comp',this)"><span class="ic">🔔</span> Compliance <span class="cnt">3</span></div>
     <div class="ni" onclick="go('docs',this)"><span class="ic">📄</span> Documents <span class="cnt">47</span></div>
-    <div class="ni" onclick="go('leads',this)"><span class="ic">🌟</span> Leads</div>
-    <div class="ni" onclick="go('inv',this)"><span class="ic">🧾</span> Invoices</div>
+    <div class="ni adminonly" onclick="go('leads',this)"><span class="ic">🌟</span> Leads</div>
+    <div class="ni adminonly" onclick="go('inv',this)"><span class="ic">🧾</span> Invoices</div>
     <div class="ni" onclick="go('tasks',this)"><span class="ic">✅</span> Tasks <span class="cnt" id="taskcnt">7</span></div>
   </div>
 
@@ -2031,7 +2031,7 @@ var TITLES = {
 };
 function go(v, el){
   if(v==='settings'){ try{ renderTeam(); }catch(e){} }
-  if(v==='audit' && (!CURRENT_USER || CURRENT_USER.r!=='Partner')){ toast('⛔ Partner access only — this log is restricted'); return; }
+  if(v==='audit' && (!CURRENT_USER || CURRENT_USER.r!=='Partner')){ toast('⛔ Partner access only — this log is restricted'); return; }if((v==='inv' || v==='leads') && CURRENT_USER && CURRENT_USER.r!=='Partner'){ toast('⛔ Partner access only — billing & leads are restricted'); return; }
   var ksPrev = (document.querySelector('.view.active') || {}).id || '';
   document.querySelectorAll('.view').forEach(function(x){ x.classList.remove('active','dirnx','dirpv'); });
   var ksNV = document.getElementById('v-'+v);
@@ -3300,6 +3300,40 @@ function dologout(){
   }catch(e){}
   toast('Signed out securely');
 }
+function applyScopeCards(){
+  if(!CURRENT_USER) return;
+  var isP = CURRENT_USER.r === 'Partner';
+  var un = CURRENT_USER.n;
+  var FIRM = {'d-pend':'361','d-over':'47','doc-req':'112','doc-pend':'361','doc-recv':'233','doc-esc':'38','c-filed':'173','c-events':'563','t-open':'99','t-rev':'8','t-done':'16'};
+  var SUBF = {'d-pend':'128 being chased','d-over':'38 escalated · partner alerted','doc-pend':'38 escalated'};
+  var mine = {};
+  mine['d-pend'] = DOCS.filter(function(d){ return ['pending','chasing','requested','escalated'].indexOf(d[4])>=0 && inScope(d[0]); }).length;
+  mine['doc-pend'] = mine['d-pend'];
+  mine['d-over'] = COMP.filter(function(r){ return String(r[3]).indexOf('overdue')>=0 && inScope(r[0]); }).length;
+  mine['doc-req'] = DOCS.filter(function(d){ return d[4]==='requested' && inScope(d[0]); }).length;
+  mine['doc-recv'] = DOCS.filter(function(d){ return d[4]==='received' && inScope(d[0]); }).length;
+  mine['doc-esc'] = DOCS.filter(function(d){ return d[4]==='escalated' && inScope(d[0]); }).length;
+  mine['c-filed'] = FILED.filter(function(f){ return inScope(f[1]); }).length;
+  mine['c-events'] = COMP.filter(function(r){ return inScope(r[0]); }).length;
+  mine['t-open'] = TASKS.filter(function(r){ return r[2]===un && r[6]==='open'; }).length;
+  mine['t-rev'] = TASKS.filter(function(r){ return r[2]===un && r[6]==='review'; }).length;
+  mine['t-done'] = TASKS.filter(function(r){ return r[2]===un && r[6]==='done'; }).length;
+  var chase = DOCS.filter(function(d){ return d[4]==='chasing' && inScope(d[0]); }).length;
+  var mysub = {'d-pend': String(chase) + ' being chased', 'd-over': String(mine['doc-esc']) + ' escalated · partner alerted', 'doc-pend': String(mine['doc-esc']) + ' escalated'};
+  document.querySelectorAll('.card.kpi').forEach(function(el){
+    var oc = String(el.getAttribute('onclick') || '');
+    var m = oc.match(/kpiDrill\('([a-z0-9-]+)'\)/); if(!m) return;
+    var k = m[1];
+    if(k === 'd-fees' || k === 'd-leads'){ el.style.display = isP ? '' : 'none'; return; }
+    if(!FIRM.hasOwnProperty(k)) return;
+    var b = el.querySelector('b[data-count]'); if(!b) return;
+    b.dataset.count = isP ? FIRM[k] : String(mine[k]);
+    b.dataset.done = '';
+    var sub = el.querySelector('.delta');
+    if(sub && !isP && mysub.hasOwnProperty(k)){ sub.textContent = mysub[k]; sub.classList.remove('up'); }
+    else if(sub && isP && SUBF.hasOwnProperty(k)){ sub.textContent = SUBF[k]; }
+  });
+}
 function applyRole(){
   var isPartner = CURRENT_USER && CURRENT_USER.r === 'Partner';
   document.querySelectorAll('.adminonly').forEach(function(el){ el.style.display = isPartner ? '' : 'none'; });
@@ -3308,6 +3342,7 @@ function applyRole(){
     '<div><b>'+CURRENT_USER.n+'</b><span>'+CURRENT_USER.p+'</span></div>' +
     '<button class="logoutbtn" style="margin-left:auto;" title="Sign out" onclick="dologout()">⏻</button>';
   applyScope();
+  applyScopeCards();
 }
 renderUserCards();
 
