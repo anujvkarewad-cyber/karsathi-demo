@@ -1188,7 +1188,7 @@ body.ksboot .main { animation: ksMainIn .6s var(--ks-out) both; }
         </div>
       </div>
       <div class="demohint">🔒 Demo — any password works · Roles change what each person can see</div>
-      <div class="lcopy">© 2026 KarSathi. All rights reserved. · <b style="color:#0EA5C9;">v3.10.2</b></div>
+      <div class="lcopy">© 2026 KarSathi. All rights reserved. · <b style="color:#0EA5C9;">v3.10.3</b></div>
     </div>
   </div>
 </div>
@@ -4507,9 +4507,9 @@ function ksum(pairs){
 }
 function kstage(days){ return days >= 15 ? ['PARTNER CALL','kt-r'] : (days >= 8 ? ['FOLLOW-UP 2','kt-y'] : ['CHASING','kt-g']); }
 function kPend(){
-  var pd = DOCS.filter(function(d){ return ['pending','chasing','requested','escalated'].indexOf(d[4]) >= 0; });
+  var pd = DOCS.filter(function(d){ return ['pending','chasing','requested','escalated'].indexOf(d[4]) >= 0 && inScope(d[0]); });
   pd.sort(function(a, b){ return (parseInt(b[3], 10) || 0) - (parseInt(a[3], 10) || 0); });
-  var h = ksum([['Total pending', String(pd.length)], ['Being chased', String(DOCS.filter(function(d){ return d[4] === 'chasing'; }).length)], ['Escalated to partner', String(DOCS.filter(function(d){ return d[4] === 'escalated'; }).length)]]);
+  var h = ksum([['Total pending', String(pd.length)], ['Being chased', String(DOCS.filter(function(d){ return d[4] === 'chasing' && inScope(d[0]); }).length)], ['Escalated to partner', String(DOCS.filter(function(d){ return d[4] === 'escalated' && inScope(d[0]); }).length)]]);
   pd.forEach(function(d){
     var st = d[4] === 'escalated' ? ['ESCALATED ⚠', 'kt-r'] : (d[4] === 'chasing' ? ['CHASING', 'kt-y'] : ['PENDING', 'kt-b']);
     h += kr(d[0], d[1], d[2] + ' · ' + d[3] + ' follow-up(s) · WhatsApp', st[0], st[1]);
@@ -4530,25 +4530,26 @@ function kDue(){
   return h;
 }
 function kFiled(){
-  var h = ksum([['GSTR-3B','84'],['GSTR-1','66'],['TDS returns','26'],['ITR filings','12'],['ROC forms','6']]);
+  var h = (!CURRENT_USER || CURRENT_USER.r === 'Partner') ? ksum([['GSTR-3B','84'],['GSTR-1','66'],['TDS returns','26'],['ITR filings','12'],['ROC forms','6']]) : '';
   var rows = [['Vora Solutions Pvt Ltd','GSTR-3B · Oct','filed 18 Oct · 2 d early'],['Saxena Apparels Pvt Ltd','GSTR-1 · Oct','filed 10 Oct · on time'],
     ['Chatterjee Foods Pvt Ltd','TDS · Q2','filed 06 Oct · 1 d early'],['Dave Steel Pvt Ltd','GSTR-3B · Oct','filed 17 Oct · on time'],
     ['Bajaj Foods Pvt Ltd','GSTR-1 · Oct','filed 11 Oct · on time'],['Nair Fabrics Pvt Ltd','TDS · Q2','filed 05 Oct · 2 d early'],
     ['Khan Associates LLP','DPT-3','filed 14 Oct · on time'],['Ayesha Reddy','ITR · AY 25-26','filed 12 Oct · on time']];
-  rows.forEach(function(r){ h += kr(r[0], r[1], r[2], 'ON TIME', 'kt-g'); });
+  rows.forEach(function(r){ if(inScope(r[0])) h += kr(r[0], r[1], r[2], 'ON TIME', 'kt-g'); });
   return h;
 }
 function kClients(){
-  var mix = {}; CLIENTS.forEach(function(c){ mix[c[1]] = (mix[c[1]] || 0) + 1; });
+  var CL = CLIENTS.filter(function(c){ return inScope(c[0]); });
+  var mix = {}; CL.forEach(function(c){ mix[c[1]] = (mix[c[1]] || 0) + 1; });
   var lbl = { 'Individual':'Individuals', 'Proprietorship':'Proprietorships', 'Partnership':'Partnerships', 'Pvt Ltd':'Pvt Ltd', 'LLP':'LLPs', 'HUF':'HUFs' };
   var pairs = Object.keys(mix).map(function(k){ return [lbl[k] || k, String(mix[k])]; });
   pairs.sort(function(a, b){ return parseInt(b[1], 10) - parseInt(a[1], 10); });
   var h = ksum(pairs);
-  CLIENTS.forEach(function(c){
+  CL.forEach(function(c){
     var act = c[5].indexOf('Inactive') < 0;
     h += kr(c[0], c[3], c[2], act ? 'ACTIVE' : 'INACTIVE', act ? 'kt-g' : 'kt-b');
   });
-  return h + '<div class="knote">Showing ALL ' + CLIENTS.length + ' of ' + CLIENTS.length + ' clients — the complete master sheet. Nothing capped, nothing filtered.</div>';
+  return h + '<div class="knote">Showing ALL ' + CL.length + ' of ' + CL.length + ' clients — the complete master sheet. Nothing capped, nothing filtered.</div>';
 }
 function kFees(){
   var h = ksum([['GST retainers','₹1.1L'],['ITR filings','₹0.8L'],['Audit assignments','₹0.9L'],['Advisory · misc','₹0.4L']]);
@@ -4586,14 +4587,15 @@ function kReqToday(){
 }
 function kPendAll(){ return kPend(); }
 function kRecv(){
-  var mix = {}; FILED.forEach(function(f){ mix[f[2]] = (mix[f[2]] || 0) + 1; });
+  var FR = FILED.filter(function(f){ return inScope(f[1]); });
+  var mix = {}; FR.forEach(function(f){ mix[f[2]] = (mix[f[2]] || 0) + 1; });
   var pairs = Object.keys(mix).map(function(k){ return [k, String(mix[k])]; });
   pairs.sort(function(a, b){ return parseInt(b[1], 10) - parseInt(a[1], 10); });
   var h = ksum(pairs.slice(0, 6));
-  FILED.forEach(function(f){
+  FR.forEach(function(f){
     h += kr(f[1], f[2], 'received ' + f[3] + ' · ' + f[0] + ' · Drive vault', 'FILED', 'kt-g');
   });
-  return h + '<div class="knote">Showing ALL ' + FILED.length + ' of ' + FILED.length + ' received &amp; filed documents — the complete Google Drive vault register.</div>';
+  return h + '<div class="knote">Showing ALL ' + FR.length + ' of ' + FR.length + ' received &amp; filed documents — the complete Google Drive vault register.</div>';
 }
 function kEsc(){
   return kr('Pillai &amp; Jadhav Associates', 'Stock Statement', 'day 18 · 4 reminders ignored', 'PARTNER CALL', 'kt-r')
@@ -4656,7 +4658,7 @@ var KPI_DRILLS = {
   'c-due':     { t: '51 Filings Due in 7 Days', s: 'reminder engine armed for each', g: kDue },
   'c-over':    { t: '47 Overdue Filings', s: 'statutory deadlines already crossed', g: kOver },
   'c-filed':   { t: '173 Filed On Time · MTD', s: 'breakdown by filing type + recent filings', g: kFiled },
-  'c-events':  { t: '563 Tracked Events', s: 'every deadline · every client · every statute', g: function(){ return ksum([['ITR','289'],['GST','141'],['TDS','70'],['ROC + Audit','63']]) + '<div class="knote">One row per client × statutory duty. The calendar auto-generates from entity type and registrations — nobody maintains this list by hand.</div>'; } },
+  'c-events':  { t: '563 Tracked Events', s: 'every deadline · every client · every statute', g: function(){ return ((!CURRENT_USER || CURRENT_USER.r === 'Partner') ? ksum([['ITR','289'],['GST','141'],['TDS','70'],['ROC + Audit','63']]) : '') + '<div class="knote">One row per client × statutory duty. The calendar auto-generates from entity type and registrations — nobody maintains this list by hand.</div>'; } },
   'doc-req':   { t: '6 Documents Requested Today', s: 'WhatsApp + email · requested this morning', g: kReqToday },
   'doc-pend':  { t: '361 Pending Documents', s: 'across all clients · sorted by age', g: kPendAll },
   'doc-recv':   { t: '233 Received · MTD · 700 Filed Aug–Oct', s: 'scanned on arrival · auto-filed to the Drive vault', g: kRecv },
@@ -4678,6 +4680,32 @@ var KPI_DRILLS = {
   'p-out':     { t: 'Outstanding Fees', s: 'collection engine is chasing every rupee', g: function(){ return kInv(3, 8, 'CHASING', 'kt-y'); } },
   'p-ontime':  { t: 'On-time Rate — Lifetime', s: 'why clients renew', g: function(){ return ksum([['Filed on time','96%'],['Average slack','2.1 days'],['Best streak','3 months']]) + ksum([['GSTR-3B','98%'],['ITR','95%'],['TDS','97%'],['ROC','92%']]) + '<div class="knote">Every filing timestamped in the audit trail — this number survives scrutiny.</div>'; } }
 };
+function kpiScopeBody(body){
+  try{
+    if(!CURRENT_USER || CURRENT_USER.r === 'Partner') return;
+    var before = body.querySelectorAll('.krow').length;
+    body.querySelectorAll('.krow').forEach(function(rw){
+      var kc = rw.querySelector('.kc');
+      var t = kc ? String(kc.textContent).replace(/\s+/g, ' ').trim() : '';
+      if(t === '' || t === '—') return;
+      if(!inScope(t)) rw.remove();
+    });
+    body.querySelectorAll('tr').forEach(function(tr){
+      var a = tr.querySelector('.clickname');
+      if(!a) return;
+      var m = String(a.getAttribute('onclick') || '').match(/openClientName\('([^']+)'\)/);
+      if(m && !inScope(m[1])) tr.remove();
+    });
+    var after = body.querySelectorAll('.krow').length;
+    if(before > 0 && after === 0){
+      body.insertAdjacentHTML('beforeend', '<div class="knote">Nothing here for your assigned clients — the partner sees the firm-wide list.</div>');
+    }
+    var tt = document.getElementById('kpi-t');
+    if(tt){ tt.innerHTML = String(tt.innerHTML).replace(/^\d[\d,\.]*\s*/, '').replace(/—\s*\d[\d,\.]*\s*$/, '').trim() + ' · your assigned clients'; }
+    var ss = document.getElementById('kpi-s');
+    if(ss){ ss.innerHTML = String(ss.innerHTML).replace(/across all clients/gi, 'your assigned clients'); }
+  }catch(e){}
+}
 function kpiDrill(id){
   var dd = KPI_DRILLS[id];
   if(!dd) return;
@@ -4694,16 +4722,8 @@ function kpiDrill(id){
   document.getElementById('kpi-s').innerHTML = dd.s;
   var body = document.getElementById('kpi-b');
   body.innerHTML = dd.g();
+  kpiScopeBody(body);
   kpiArm(body);
-  try{
-    if(CURRENT_USER && CURRENT_USER.r !== 'Partner'){
-      body.querySelectorAll('tr').forEach(function(tr){
-        var a = tr.querySelector('.clickname'); if(!a) return;
-        var m = String(a.getAttribute('onclick') || '').match(/openClientName\('([^']+)'\)/);
-        if(m && !inScope(m[1])) tr.style.display = 'none';
-      });
-    }
-  }catch(e){}
   document.getElementById('kpiov').classList.add('on'); ksModalSync();
 }
 function kpiClose(){ document.getElementById('kpiov').classList.remove('on');  ksModalSync(); }
